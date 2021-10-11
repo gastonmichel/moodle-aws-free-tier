@@ -1,0 +1,9 @@
+{
+  "app": "python3 cdk.py",
+  "context": {
+    "cdk_default_region": "us-east-1",
+    "ecs_node_type": "t2.micro",
+    "redis_node_type": "cache.t2.micro",
+    "rds_node_type": "db.t2.micro"
+  }
+}

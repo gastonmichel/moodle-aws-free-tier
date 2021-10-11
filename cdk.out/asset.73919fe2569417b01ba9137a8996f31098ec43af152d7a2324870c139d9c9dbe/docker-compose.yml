@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  webserver:
+    build:
+      context: ./
+    command: "
+      php admin/cli/install_database.php 
+      --lang=es 
+      --adminuser=gaston 
+      --adminpass=gastongastonn 
+      --adminemail=michel.z.gaston@gmail.com 
+      --agree-license 
+      --fullname='Taller Fisica Al Alcance de Todos' 
+      --shortname='TFAT' 
+      --summary='hello' 
+      || /usr/local/bin/apache2-foreground"
+    environment:
+      MOODLE_DOCKER_DB_TYPE: mariadb
+      MOODLE_DOCKER_DB_HOST: mariadb
+      MOODLE_DOCKER_DB_NAME: moodle
+      MOODLE_DOCKER_DB_USER: moodle
+      MOODLE_DOCKER_DB_PASS: "m@0dl3ing"
+      MOODLE_DOCKER_WEB_HOST: http://localhost:5005
+    ports:
+      - '5005:80'
+    depends_on: 
+      - mariadb
+      - redis
+  redis:
+    image: redis:6
+  mariadb:
+    image: mariadb:10.5
+    command: >
+              --character-set-server=utf8mb4
+              --collation-server=utf8mb4_bin
+              --innodb_file_per_table=On
+              --wait-timeout=28800
+    environment:
+      MYSQL_ROOT_PASSWORD: "m@0dl3ing"
+      MYSQL_USER: moodle
+      MYSQL_PASSWORD: "m@0dl3ing"
+      MYSQL_DATABASE: moodle
+    ports:
+      - 3306:3306
