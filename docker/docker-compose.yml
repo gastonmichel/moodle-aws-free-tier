@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  webserver:
+  moodle:
     build:
       context: ./
     # command: "
@@ -17,14 +17,14 @@ services:
     environment:
       DB_TYPE: mariadb
       DB_HOST: mariadb
+      DB_PORT: 3306
       DB_NAME: moodle
       DB_USER: moodle
       DB_PASS: "m@0dl3ing"
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      WEB_HOST: http://localhost:5005
     ports:
-      - '5005:80'
+      - '8080:80'
     depends_on: 
       - mariadb
       - redis
@@ -45,7 +45,7 @@ services:
     ports:
       - 3306:3306
 
-  php:
-    image: moodlehq/moodle-php-apache:7.4
-    ports:
-      - '5080:80'
+  # php:
+  #   image: moodlehq/moodle-php-apache:7.4
+  #   ports:
+  #     - '5080:80'

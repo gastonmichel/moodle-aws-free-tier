@@ -1,3 +1,0 @@
-FROM bitnami/moodle:3.11.2
-
-RUN apt-get update -y && apt-get install -y stress

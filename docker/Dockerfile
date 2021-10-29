@@ -7,4 +7,4 @@ RUN tar -x -f code.tar.gz --strip-components=1 && rm -r code.tar.gz
 COPY config-dist.php config.php
 # RUN git clone https://github.com/catalyst/moodle-local_aws local/aws
 # RUN git clone https://github.com/catalyst/moodle-tool_objectfs.git admin/tool/objectfs
-EXPOSE 443
+EXPOSE 8080
