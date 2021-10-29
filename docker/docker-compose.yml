@@ -3,23 +3,25 @@ services:
   webserver:
     build:
       context: ./
-    command: "
-      php admin/cli/install_database.php 
-      --lang=es 
-      --adminuser=gaston 
-      --adminpass=gastongastonn 
-      --adminemail=michel.z.gaston@gmail.com 
-      --agree-license 
-      --fullname='Taller Fisica Al Alcance de Todos' 
-      --shortname='TFAT' 
-      --summary='hello' 
-      || /usr/local/bin/apache2-foreground"
+    # command: "
+    #   php admin/cli/install_database.php 
+    #   --lang=es 
+    #   --adminuser=gaston 
+    #   --adminpass=gastongastonn 
+    #   --adminemail=michel.z.gaston@gmail.com 
+    #   --agree-license 
+    #   --fullname='Taller Fisica Al Alcance de Todos' 
+    #   --shortname='TFAT' 
+    #   --summary='hello' 
+    #   || /usr/local/bin/apache2-foreground"
     environment:
       DB_TYPE: mariadb
       DB_HOST: mariadb
       DB_NAME: moodle
       DB_USER: moodle
       DB_PASS: "m@0dl3ing"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       WEB_HOST: http://localhost:5005
     ports:
       - '5005:80'
