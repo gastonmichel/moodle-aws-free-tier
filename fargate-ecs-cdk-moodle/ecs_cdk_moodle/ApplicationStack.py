@@ -34,17 +34,24 @@ class MoodleApplicationStack(cdk.Stack):
         
         # set container image
         # docker_build_path = os.path.dirname(__file__) + "../../src"
-        # moodle_image =_ecr_assets.DockerImageAsset(
-        #     self, "MoodleImage",
-        #     directory=docker_build_path,
-        #     file="Docker.moodle",
-        # )
+        moodle_image =_ecr_assets.DockerImageAsset(
+            self, "MoodleImage",
+            directory='./docker',
+        )
  
         # define ecs cluster with container insights
         moodle_cluster = _ecs.Cluster(
             self, 'MoodleCluster',
             vpc=properties.vpc,
             container_insights=True,           
+        )
+        moodle_cluster.add_capacity("MoodleECSAutoScalingGroupCapacity",
+            instance_type=_ec2.InstanceType('t2.micro'),
+            desired_capacity=1,
+            min_capacity=1,
+            max_capacity=1,
+            # auto_scaling_group_name='moodle-asg',
+            vpc_subnets={'subnet_type': _ec2.SubnetType.PUBLIC},
         )
         # mount efs in ecs cluster
         moodle_volume = _ecs.Volume(
@@ -58,9 +65,10 @@ class MoodleApplicationStack(cdk.Stack):
         taskRole.add_managed_policy(_iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"))
  
         # set task definition with 1 vCPU and 2GB RAM    
-        task = _ecs.FargateTaskDefinition(
+        task = _ecs.Ec2TaskDefinition(
             self, "MoodleTaskDefinition",
-            volumes=[moodle_volume],cpu=1024,memory_limit_mib=2048,
+            volumes=[moodle_volume],
+            # cpu=1024,memory_limit_mib=2048,
             task_role=taskRole,
         )
         # define container with logging enabled
@@ -85,14 +93,15 @@ class MoodleApplicationStack(cdk.Stack):
                 'MOODLE_DATABASE_PASSWORD':
                     _ecs.Secret.from_secrets_manager(properties.database.secret, field="password")                  
             },
-            # image=_ecs.ContainerImage.from_docker_image_asset(moodle_image),
-            image=_ecs.ContainerImage.from_registry('public.ecr.aws/bitnami/moodle:latest'),
+            memory_limit_mib=300,
+            image=_ecs.ContainerImage.from_docker_image_asset(moodle_image),
+            # image=_ecs.ContainerImage.from_registry('public.ecr.aws/bitnami/moodle:latest'),
             logging=_ecs.LogDrivers.aws_logs(stream_prefix="moodle-ecs-fargate", log_retention=_logs.RetentionDays.FIVE_DAYS)
         )
         # define mount point to /bitnami
         moodle_mount_point = _ecs.MountPoint(
             read_only=False,
-            container_path="/bitnami",
+            container_path="/var/www/moodle",
             source_volume=moodle_volume.name
         )
        
@@ -101,13 +110,13 @@ class MoodleApplicationStack(cdk.Stack):
 
         # set mapping port in container
         container.add_port_mappings(
-            _ecs.PortMapping(container_port=8080)
+            _ecs.PortMapping(container_port=80)
         )
         # create ecs service in Fargate mode with execute command enabled 
-        service = _ecs.FargateService(
+        service = _ecs.Ec2Service(
             self, "MoodleFargateService",
             task_definition=task,
-            platform_version=_ecs.FargatePlatformVersion.VERSION1_4,
+            # platform_version=_ecs.FargatePlatformVersion.VERSION1_4,
             cluster=moodle_cluster,
             desired_count=1,
             health_check_grace_period=cdk.Duration.seconds(12000),

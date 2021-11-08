@@ -13,8 +13,9 @@ class MoodleFileSystemStack(cdk.Stack):
         self.file_system = efs.FileSystem(
             self, "MoodleFileSystem",
             vpc=vpc,
+            security_group=ec2.SecurityGroup.from_security_group_id(self,'DefaultSG',vpc.vpc_default_security_group),
             lifecycle_policy=efs.LifecyclePolicy.AFTER_14_DAYS,
             performance_mode=efs.PerformanceMode.GENERAL_PURPOSE,
             vpc_subnets={'subnet_type': ec2.SubnetType.ISOLATED},
-            throughput_mode=efs.ThroughputMode.BURSTING
+            throughput_mode=efs.ThroughputMode.BURSTING,
         )

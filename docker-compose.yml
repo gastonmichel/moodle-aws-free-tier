@@ -2,18 +2,11 @@ version: "3.8"
 services:
   moodle:
     build:
-      context: ./
-    # command: "
-    #   php admin/cli/install_database.php 
-    #   --lang=es 
-    #   --adminuser=gaston 
-    #   --adminpass=gastongastonn 
-    #   --adminemail=michel.z.gaston@gmail.com 
-    #   --agree-license 
-    #   --fullname='Taller Fisica Al Alcance de Todos' 
-    #   --shortname='TFAT' 
-    #   --summary='hello' 
-    #   || /usr/local/bin/apache2-foreground"
+      context: ./docker
+      args:
+        TARGETPLATFORM: linux/amd64
+    # command: ['cat', '/etc/apache2/sites-enabled/000-default.conf']
+
     environment:
       DB_TYPE: mariadb
       DB_HOST: mariadb
@@ -44,8 +37,3 @@ services:
       MYSQL_DATABASE: moodle
     ports:
       - 3306:3306
-
-  # php:
-  #   image: moodlehq/moodle-php-apache:7.4
-  #   ports:
-  #     - '5080:80'
