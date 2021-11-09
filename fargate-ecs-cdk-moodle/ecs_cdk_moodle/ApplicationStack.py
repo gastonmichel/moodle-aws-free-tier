@@ -38,6 +38,13 @@ class MoodleApplicationStack(cdk.Stack):
             self, "MoodleImage",
             directory='./docker',
         )
+        # mount efs in ecs cluster
+        moodle_volume = _ecs.Volume(
+            name="MoodleVolume",
+            efs_volume_configuration=_ecs.EfsVolumeConfiguration(
+               file_system_id=properties.filesystem.file_system_id
+            )
+        )
  
         # define ecs cluster with container insights
         moodle_cluster = _ecs.Cluster(
@@ -53,13 +60,6 @@ class MoodleApplicationStack(cdk.Stack):
             # auto_scaling_group_name='moodle-asg',
             vpc_subnets={'subnet_type': _ec2.SubnetType.PUBLIC},
         )
-        # mount efs in ecs cluster
-        moodle_volume = _ecs.Volume(
-            name="MoodleVolume",
-            efs_volume_configuration=_ecs.EfsVolumeConfiguration(
-               file_system_id=properties.filesystem.file_system_id
-            )
-        )
         # define task execution role and attach ECSTaskExecutionRole managed policy
         taskRole = _iam.Role(self, "MoodleTaskExecutionRole", assumed_by=_iam.ServicePrincipal("ecs-tasks.amazonaws.com"))
         taskRole.add_managed_policy(_iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"))
@@ -70,6 +70,7 @@ class MoodleApplicationStack(cdk.Stack):
             volumes=[moodle_volume],
             # cpu=1024,memory_limit_mib=2048,
             task_role=taskRole,
+            # network_mode=_ecs.NetworkMode.AWS_VPC,
         )
         # define container with logging enabled
         container = task.add_container(
@@ -98,15 +99,16 @@ class MoodleApplicationStack(cdk.Stack):
             # image=_ecs.ContainerImage.from_registry('public.ecr.aws/bitnami/moodle:latest'),
             logging=_ecs.LogDrivers.aws_logs(stream_prefix="moodle-ecs-fargate", log_retention=_logs.RetentionDays.FIVE_DAYS)
         )
+
         # define mount point to /bitnami
         moodle_mount_point = _ecs.MountPoint(
             read_only=False,
-            container_path="/var/www/moodle",
+            container_path="/var/www/moodle/data",
             source_volume=moodle_volume.name
         )
        
         # add mount point to container
-        container.add_mount_points(moodle_mount_point)
+        # container.add_mount_points(moodle_mount_point)
 
         # set mapping port in container
         container.add_port_mappings(
@@ -119,7 +121,7 @@ class MoodleApplicationStack(cdk.Stack):
             # platform_version=_ecs.FargatePlatformVersion.VERSION1_4,
             cluster=moodle_cluster,
             desired_count=1,
-            health_check_grace_period=cdk.Duration.seconds(12000),
+            health_check_grace_period=cdk.Duration.seconds(120),
             enable_execute_command=True,
         )
  

@@ -28,7 +28,7 @@ class MoodleLoadBalacedServiceStack(cdk.Stack):
             cluster=cluster,
             task_definition=task_definition,
             desired_count=1,
-            health_check_grace_period=cdk.Duration.seconds(1200),
+            health_check_grace_period=cdk.Duration.seconds(120),
             listener_port=80,
             min_healthy_percent=0,
             max_healthy_percent=200,

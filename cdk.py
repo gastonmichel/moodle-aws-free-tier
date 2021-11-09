@@ -8,7 +8,7 @@ from moodle.FileSystemStack import MoodleFileSystemStack
 from moodle.LoadBalancerStack import MoodleLoadBalancerStack
 from moodle.RedisStack import MoodleRedisStack
 from moodle.ApplicationStack import MoodleApplicationStack
-
+from moodle.LoadBalancedEc2Service import MoodleLoadBalacedServiceStack
 app = cdk.App()
 
 env = cdk.Environment(
@@ -49,5 +49,11 @@ moodle = MoodleApplicationStack(
     sessioncache=redis.redis_cluster,
 )
 moodle.add_dependency(filesystem)
+
+# service = MoodleLoadBalacedServiceStack(
+#     app, 'MoodleService', env=env,
+#     cluster=moodle.ecs,
+#     task_definition=moodle.task,
+# )
 
 app.synth()
