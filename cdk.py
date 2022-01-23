@@ -5,10 +5,10 @@ from aws_cdk.aws_s3 import RedirectProtocol
 from moodle.VPCStack import MoodleVPCStack
 from moodle.DatabaseStack import MoodleDatabaseStack
 from moodle.FileSystemStack import MoodleFileSystemStack
-from moodle.LoadBalancerStack import MoodleLoadBalancerStack
+# from moodle.LoadBalancerStack import MoodleLoadBalancerStack
 from moodle.RedisStack import MoodleRedisStack
 from moodle.ApplicationStack import MoodleApplicationStack
-from moodle.LoadBalancedEc2Service import MoodleLoadBalacedServiceStack
+from moodle.LoadBalacedServiceStack import MoodleLoadBalacedServiceStack
 app = cdk.App()
 
 env = cdk.Environment(
@@ -25,10 +25,10 @@ redis = MoodleRedisStack(
     vpc=vpc.vpc,
 )
 
-loadbalancer = MoodleLoadBalancerStack(
-    app, 'MoodleLoadBalancer', env=env,
-    vpc=vpc.vpc,    
-)
+# loadbalancer = MoodleLoadBalancerStack(
+#     app, 'MoodleLoadBalancer', env=env,
+#     vpc=vpc.vpc,    
+# )
 
 database = MoodleDatabaseStack(
     app,'MoodleDatabase', env=env, 
@@ -43,17 +43,18 @@ filesystem = MoodleFileSystemStack(
 moodle = MoodleApplicationStack(
     app,'MoodleApplication', env=env,
     vpc=vpc.vpc,
-    loadbalancer=loadbalancer.load_balancer,
+    # loadbalancer=loadbalancer.load_balancer,
     database=database.db_instance,
     filesystem=filesystem.file_system,
     sessioncache=redis.redis_cluster,
 )
 moodle.add_dependency(filesystem)
 
-# service = MoodleLoadBalacedServiceStack(
-#     app, 'MoodleService', env=env,
-#     cluster=moodle.ecs,
-#     task_definition=moodle.task,
-# )
+service = MoodleLoadBalacedServiceStack(
+    app, 'MoodleLoadBalacedService', env=env,
+    cluster=moodle.ecs,
+    task_definition=moodle.task,
+)
+service.add_dependency(moodle)
 
 app.synth()

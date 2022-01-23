@@ -108,7 +108,7 @@ class MoodleApplicationStack(cdk.Stack):
         )
        
         # add mount point to container
-        # container.add_mount_points(moodle_mount_point)
+        container.add_mount_points(moodle_mount_point)
 
         # set mapping port in container
         container.add_port_mappings(
@@ -159,11 +159,11 @@ class MoodleApplicationStack(cdk.Stack):
             "MoodleHttpServiceTarget",
             protocol=_elbv2.ApplicationProtocol.HTTP,
             targets=[service],
-            # health_check=_elbv2.HealthCheck(healthy_http_codes="200-299,301,302",
-            #     healthy_threshold_count=3,
-            #     unhealthy_threshold_count=2,    
-            #     interval=cdk.Duration.seconds(10),
-            # )
+            health_check=_elbv2.HealthCheck(healthy_http_codes="200-299,301,302",
+                healthy_threshold_count=3,
+                unhealthy_threshold_count=2,    
+                interval=cdk.Duration.seconds(10),
+            )
         )
  
         # output load balancer dns
