@@ -70,7 +70,7 @@ class MoodleApplicationStack(cdk.Stack):
             volumes=[moodle_volume],
             # cpu=1024,memory_limit_mib=2048,
             task_role=taskRole,
-            # network_mode=_ecs.NetworkMode.AWS_VPC,
+            network_mode=_ecs.NetworkMode.AWS_VPC,
         )
         # define container with logging enabled
         container = task.add_container(

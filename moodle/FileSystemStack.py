@@ -3,19 +3,18 @@ from aws_cdk import (
     aws_efs as efs,
     core as cdk
 )
-
+from . import VPCStack
 class MoodleFileSystemStack(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, id: str, vpc: ec2.Vpc, **kwargs):
+    def __init__(self, scope: cdk.Construct, id: str, vpc: VPCStack.MoodleVPCStack, **kwargs):
         
         super().__init__(scope=scope, id=id, **kwargs)
 
-        self.file_system = efs.FileSystem(
+        self.efs = efs.FileSystem(
             self, "MoodleFileSystem",
-            vpc=vpc,
-            security_group=ec2.SecurityGroup.from_security_group_id(self,'DefaultSG',vpc.vpc_default_security_group),
+            vpc=vpc.vpc,
             lifecycle_policy=efs.LifecyclePolicy.AFTER_14_DAYS,
             performance_mode=efs.PerformanceMode.GENERAL_PURPOSE,
-            vpc_subnets={'subnet_type': ec2.SubnetType.ISOLATED},
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.ISOLATED),
             throughput_mode=efs.ThroughputMode.BURSTING,
         )
